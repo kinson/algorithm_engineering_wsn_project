@@ -11,7 +11,7 @@ def get_n_points_on_square(n):
     return [ (p[0], p[1]) for p in points ]
 
 def get_n_points_on_disk(n):
-    """Return n uniformly distributed points within a square as a list of lists."""
+    """Return n uniformly distributed points within a disk as a list of lists."""
     r = numpy.random.uniform(0, 1, (n))
     r = list(map(lambda x: math.sqrt(x), r))
     theta = numpy.random.uniform(0, 2*math.pi, (n))
