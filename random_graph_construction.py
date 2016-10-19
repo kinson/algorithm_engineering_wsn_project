@@ -10,6 +10,16 @@ def get_n_points_on_square(n):
     points = numpy.random.uniform(0, 1, (n, 2))
     return [ (p[0], p[1]) for p in points ]
 
+def get_n_points_on_disk(n):
+    """Return n uniformly distributed points within a square as a list of lists."""
+    r = numpy.random.uniform(0, 1, (n))
+    r = list(map(lambda x: math.sqrt(x), r))
+    theta = numpy.random.uniform(0, 2*math.pi, (n))
+    theta = list(map(lambda x: [math.cos(x), math.sin(x)], theta))
+    points = [[i*j[0], i*j[1]] for i, j in zip(r, theta)]
+
+    return [ (p[0], p[1]) for p in points ]
+
 # graph points on unit square
 def get_x_y_list(points):
     """Return tuple of two lists with the x coordinates in one and the y coordinates in the other."""
@@ -21,7 +31,7 @@ def plot_points(points):
     """Create plot mapping points plane."""
     x_y_p = get_x_y_list(points)
     plt.plot(x_y_p[0], x_y_p[1], 'r.')
-    plt.axis([0, 1, 0, 1])
+    plt.axis([-1, 1, -1, 1])
     plt.show()
 
 # using number of points and avg degree, calculate connection radius
@@ -35,6 +45,17 @@ def get_unit_square_connection_radius(n_points, avg_degree):
     Formula for calculating radius for unit square: R = sqrt( d / (n*pi) )
     """
     return math.sqrt( avg_degree / (n_points * math.pi) )
+
+def get_unit_circle_connection_radius(n_points, avg_degree):
+    """Return max edge length to use for connecting graph.
+
+    d = average degree
+    n = number of points
+    R = radius of connection
+
+    Formula for calculating radius for unit circle: R = sqrt( d / n )
+    """
+    return math.sqrt( avg_degree / n_points )
 
 def get_bucket_size(connection_radius):
     """Return the side lengths of the squares that will be used as buckets for
@@ -120,28 +141,37 @@ def create_adjancency_list(points, buckets, radius, b_length):
     return adj_list
 
 
-if __name__ == "__main__":
-    n_points = 1000
-    a_degree = 64
-    shape = 'square'
 
+def get_adjacency_list(n_points, avg_degree, shape):
+    """Return adjacency list for given number of vertices, average degree on given shape."""
     # get the points
-    points = get_n_points_on_square(n_points)
+    if shape == 'square':
+        points = get_n_points_on_square(n_points)
+    elif shape == 'disk':
+        points = get_n_points_on_disk(n_points)
     # get the radius of connection and print them
-    radius = get_unit_square_connection_radius(n_points, a_degree)
-    print("average radius: ", radius)
+    if shape == 'square':
+        radius = get_unit_square_connection_radius(n_points, a_degree)
+    elif shape == 'disk':
+        radius = get_unit_circle_connection_radius(n_points, a_degree)
     # get the bucket side length and print it
     b_length = get_bucket_size(radius)
-    print("side lengths for buckets: ", b_length)
     # get number of buckets in each direction
     buckets = create_buckets_for_points(get_bucket_dimensions(b_length))
     # fill buckets
     buckets = fill_buckets(points, buckets, b_length)
-    # print the adjency list
-    adj_list = create_adjancency_list(points, buckets, radius, b_length)
+    # return the adjency list
+    return create_adjancency_list(points, buckets, radius, b_length)
 
-    sum_edges = 0
-    num_verticies = len(adj_list)
-    for vertex in adj_list:
-        sum_edges += len(vertex['connected_points'])
-    print(sum_edges, num_verticies, sum_edges/num_verticies)
+
+
+if __name__ == "__main__":
+    n_points = 64000
+    a_degree = 64
+    shape = 'square'
+
+    adj_list = get_adjacency_list(n_points, a_degree, shape)
+
+    # get the points
+    # points = get_n_points_on_square(n_points, shape)
+    # plot_points(points)
