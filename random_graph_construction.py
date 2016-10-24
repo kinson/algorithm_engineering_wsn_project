@@ -151,9 +151,9 @@ def get_adjacency_list(n_points, avg_degree, shape):
         points = get_n_points_on_disk(n_points)
     # get the radius of connection and print them
     if shape == 'square':
-        radius = get_unit_square_connection_radius(n_points, a_degree)
+        radius = get_unit_square_connection_radius(n_points, avg_degree)
     elif shape == 'disk':
-        radius = get_unit_circle_connection_radius(n_points, a_degree)
+        radius = get_unit_circle_connection_radius(n_points, avg_degree)
     # get the bucket side length and print it
     b_length = get_bucket_size(radius)
     # get number of buckets in each direction
