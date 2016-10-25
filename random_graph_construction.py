@@ -128,7 +128,8 @@ def create_adjancency_list(points, buckets, radius, b_length):
     for point in points:
         point_dict = {
             'origin_point' : point,
-            'connected_points': []
+            'connected_points': [],
+            'disconnected_points': []
         }
         x_dex = get_bucket_index(point[0], b_length)
         y_dex = get_bucket_index(point[1], b_length)
