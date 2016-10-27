@@ -124,12 +124,13 @@ def point_close_enough_for_edge(o_point, d_point, r):
 
 def create_adjancency_list(points, buckets, radius, b_length):
     """Return a list of dictionarys that contain the origin point and the connected points from it."""
-    adj_list = []
+    adj_list = {}
     for point in points:
         point_dict = {
-            'origin_point' : point,
+            #'origin_point' : point,
             'connected_points': [],
-            'disconnected_points': []
+            'degree': 0,
+            'color': 0
         }
         x_dex = get_bucket_index(point[0], b_length)
         y_dex = get_bucket_index(point[1], b_length)
@@ -138,7 +139,8 @@ def create_adjancency_list(points, buckets, radius, b_length):
             if point_close_enough_for_edge(point, potential_point, radius) == True and point != potential_point:
                 point_dict['connected_points'].append(potential_point)
 
-        adj_list.append(point_dict)
+        point_dict['degree'] = len(point_dict['connected_points'])
+        adj_list[point] = point_dict
     return adj_list
 
 
