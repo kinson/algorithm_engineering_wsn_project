@@ -68,13 +68,40 @@ def get_smallest_vertex_ordering(adj_list):
     return vertices_in_order_of_degree
 
 
+def get_used_neighbor_colors(v, adj_list):
+    """Given a vertex in the adjency list, return the colors already used by its neighbors."""
+    colors_used = []
+    neighbors = adj_list[v]['connected_points']
+    for neighbor in neighbors:
+        n_color = adj_list[neighbor]['color']
+        if n_color != 0 and n_color not in colors_used:
+            colors_used.append(n_color)
+    return colors_used
+
 #HAVEN'T IMPLEMENTED YET
-def color_vertices(smallest_first_vertices):
-    """Return the list of vertices with colors associated with them."""
+def color_vertices(smallest_first_vertices, adj_list):
+    """Return the adjacency list of vertices with colors associated with them along with the number of colors used."""
     colors = [1]
     for v in smallest_first_vertices:
-        pass
+        colors_used = get_used_neighbor_colors(v, adj_list)
+        colors_left = [c for c in colors if c not in colors_used]
+        if len(colors_left):
+            adj_list[v]['color'] = colors_left[0]
+        else:
+            new_color = colors[-1] + 1
+            colors.append(new_color)
+            adj_list[v]['color'] = new_color
+    return adj_list, colors[-1]
+
+
+
 
 if __name__ == '__main__':
     a_list = get_adjacency_list(64000, 64, 'square')
+    print("part one done")
     smallest_ordered_vertices = get_smallest_vertex_ordering(a_list)
+    print("part two done")
+    a_list_colored, num_colors = color_vertices(smallest_ordered_vertices, a_list)
+    print("part three done")
+
+    print(num_colors)
