@@ -92,16 +92,3 @@ def color_vertices(smallest_first_vertices, adj_list):
             colors.append(new_color)
             adj_list[v]['color'] = new_color
     return adj_list, colors[-1]
-
-
-
-
-if __name__ == '__main__':
-    a_list = get_adjacency_list(64000, 64, 'square')
-    print("part one done")
-    smallest_ordered_vertices = get_smallest_vertex_ordering(a_list)
-    print("part two done")
-    a_list_colored, num_colors = color_vertices(smallest_ordered_vertices, a_list)
-    print("part three done")
-
-    print(num_colors)
