@@ -78,7 +78,6 @@ def get_used_neighbor_colors(v, adj_list):
             colors_used.append(n_color)
     return colors_used
 
-#HAVEN'T IMPLEMENTED YET
 def color_vertices(smallest_first_vertices, adj_list):
     """Return the adjacency list of vertices with colors associated with them along with the number of colors used."""
     colors = [1]
