@@ -28,10 +28,11 @@ def get_neighbors_and_bump_degrees(vertex_data, aux_dict, buckets):
     to next neighbor. Return the buckets and auxillary degree dictionary back."""
     new_bucket = -1
     for neighbor in vertex_data['connected_points']:
+        #print(neighbor)
         new_bucket = aux_dict[neighbor] - 1 if aux_dict[neighbor] > 0 else 0
         aux_dict[neighbor] = new_bucket
 
-        if new_bucket + 1 in neighbor and neighbor in buckets[new_bucket + 1]:
+        if new_bucket + 1 in buckets and neighbor in buckets[new_bucket + 1]:
             buckets[new_bucket + 1].remove(neighbor)
         else:
             continue

@@ -80,7 +80,7 @@ def find_largest_backbone(colors, curried_vertices_for_colors):
     return max
 
 if __name__ == "__main__":
-    a_list = get_adjacency_list(64000, 64, 'square')
+    a_list = get_adjacency_list(64000, 128, 'square')
     print("part one done")
     smallest_ordered_vertices = get_smallest_vertex_ordering(a_list)
     print("part two done")
