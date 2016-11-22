@@ -6,12 +6,12 @@ from random_graph_construction import get_adjacency_list
 c_mark = {}
 
 benchmarks = [
-    { 'n': 1000,  'd': 32,  'shape': 'square' },
+    # { 'n': 1000,  'd': 32,  'shape': 'square' },
     # { 'n': 4000,  'd': 64,  'shape': 'square' },
     # { 'n': 16000, 'd': 64,  'shape': 'square' },
     # { 'n': 64000, 'd': 64,  'shape': 'square' },
     # { 'n': 64000, 'd': 128, 'shape': 'square' },
-    # { 'n': 4000,  'd': 64,  'shape': 'disk' },
+    { 'n': 4000,  'd': 64,  'shape': 'disk' },
     # { 'n': 4000,  'd': 128, 'shape': 'disk' },
 ]
 
@@ -46,6 +46,27 @@ def generate_degree_dist(a_list):
     fig = go.Figure(data = data, layout = layout)
     return py.plot(fig, filename='degree-dist-bar-'+c_mark['tag'])
 
+def generate_vertices_plot(a_list):
+    points = list(a_list.keys())
+    x_points = list(map(lambda x: x[0], points))
+    y_points = list(map(lambda x: x[1], points))
+
+    trace = go.Scatter(
+      x = x_points,
+      y = y_points,
+      mode = 'markers'
+    )
+
+    data = [trace]
+
+    layout = go.Layout(
+      title="Vertex Positioing",
+    )
+
+    fig = go.Figure(data = data, layout = layout)
+    return py.plot(fig, filename='vertex-scatter-'+c_mark['tag'])
+
+
 if __name__ == "__main__":
   print("starting part one generation")
 
@@ -64,7 +85,8 @@ if __name__ == "__main__":
       print(degree_dist_url)
 
       #RCG display (scatter plot), include min/max vertex if possible (note: only for n <= 16000)
-
+      vertex_scatter = generate_vertices_plot(a_list)
+      print(vertex_scatter)
       #sequential coloring graph (degree of node when deleted, original degree)
 
       #color class size graph distribution
