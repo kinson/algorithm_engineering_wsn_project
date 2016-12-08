@@ -3,6 +3,7 @@ import plotly.graph_objs as go
 
 from random_graph_construction import get_adjacency_list
 from smallest_last_vertex import get_smallest_vertex_ordering
+from smallest_last_vertex import color_vertices
 
 c_mark = {}
 
@@ -102,6 +103,33 @@ def generate_sequential_coloring_plot(smallest_vertex_ordering, deleted_degrees,
     fig = go.Figure(data = data, layout = layout)
     return py.plot(fig, filename='sequential-scatter-'+c_mark['tag'])
 
+def generate_color_class_size_plot(a_list, max_color):
+    color_sizes = [0] * max_color
+    x_axis = list(range(1, max_color + 1))
+
+    for key, point in a_list.items():
+        c = point['color']
+        color_sizes[c - 1] += 1
+
+    trace = go.Bar(
+      x = x_axis,
+      y = color_sizes
+    )
+
+    data = [trace]
+
+    layout = go.Layout(
+      title="Color Class Size Bar Chart",
+      xaxis=dict(
+        title='Color Class'
+      ),
+      yaxis=dict(
+        title='Number of Vertices'
+      )
+    )
+
+    fig = go.Figure(data = data, layout = layout)
+    return py.plot(fig, filename='color-size-bar-'+c_mark['tag'])
 
 
 if __name__ == "__main__":
@@ -127,12 +155,20 @@ if __name__ == "__main__":
 
       #do smallest last vertex ordering
       smallest_last_ordering, deleted_degrees = get_smallest_vertex_ordering(a_list)
+      print("finished smallest last vertex")
 
       #sequential coloring graph (degree of node when deleted, original degree)
-      sequential_scatter = generate_sequential_coloring_plot(smallest_last_ordering, deleted_degrees, a_list)
+      ##sequential_scatter = generate_sequential_coloring_plot(smallest_last_ordering, deleted_degrees, a_list)
 
+
+      #get color clases
+      a_list, num_colors = color_vertices(smallest_last_ordering, a_list)
 
       #color class size graph distribution
+      color_class_bar = generate_color_class_size_plot(a_list, num_colors)
+
+
+
 
       #table of info relating to graph
 
