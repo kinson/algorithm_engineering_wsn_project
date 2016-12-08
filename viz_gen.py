@@ -4,16 +4,17 @@ import plotly.graph_objs as go
 from random_graph_construction import get_adjacency_list
 from smallest_last_vertex import get_smallest_vertex_ordering
 from smallest_last_vertex import color_vertices
+from backbone_selection import select_backbone
 
 c_mark = {}
 
 benchmarks = [
     # { 'n': 1000,  'd': 32,  'shape': 'square' },
     # { 'n': 4000,  'd': 64,  'shape': 'square' },
-    # { 'n': 16000, 'd': 64,  'shape': 'square' },
+    { 'n': 16000, 'd': 64,  'shape': 'square' },
     # { 'n': 64000, 'd': 64,  'shape': 'square' },
     # { 'n': 64000, 'd': 128, 'shape': 'square' },
-    { 'n': 4000,  'd': 64,  'shape': 'disk' },
+    # { 'n': 4000,  'd': 64,  'shape': 'disk' },
     # { 'n': 4000,  'd': 128, 'shape': 'disk' },
 ]
 
@@ -132,6 +133,74 @@ def generate_color_class_size_plot(a_list, max_color):
     return py.plot(fig, filename='color-size-bar-'+c_mark['tag'])
 
 
+def get_edges_for_bipartite(a_list, component):
+    edges = []
+    for c in component:
+        point_in_a_list = a_list[c]
+        for neighbor in point_in_a_list['connected_points']:
+            if neighbor in component:
+                edges.append((c, neighbor))
+
+    return edges
+
+def generate_backbone_network(nodes, edges, color_a):
+    edge_trace = go.Scatter(
+      x=[],
+      y=[],
+      line=go.Line(width=0.5,color='#888'),
+      hoverinfo='none',
+      mode='lines'
+    )
+
+    for edge in edges:
+        p1, p2 = edge[0], edge[1]
+        edge_trace['x'] += [p1[0], p2[0], None]
+        edge_trace['y'] += [p1[1], p2[1], None]
+
+    node_trace = go.Scatter(
+      x=[],
+      y=[],
+      text=[],
+      mode='markers',
+      hoverinfo='text',
+      marker=go.Marker(
+        showscale=True,
+        colorscale='YIGnBu',
+        reversescale=True,
+        color=[],
+        size=10,
+        colorbar=dict(
+          thickness=15,
+          title='Node Connections',
+          xanchor='left',
+          titleside='right'
+        ),
+        line=dict(width=2)
+      ),
+    )
+
+
+    for node in nodes:
+        node_trace['x'].append(node[0])
+        node_trace['y'].append(node[1])
+        color = '#FAA43A' if a_list[node]['color'] == color_a else '5DA5DA'
+        node_trace['marker']['color'].append(color)
+
+    fig = go.Figure(data=go.Data([edge_trace, node_trace]),
+      layout=go.Layout(
+        title='<br>Backbone Network',
+        titlefont=dict(size=16),
+        showlegend=False,
+        hovermode='closest',
+        margin=dict(b=20,l=5,r=5,t=40),
+        xaxis=go.XAxis(showgrid=False, zeroline=False, showticklabels=False),
+        yaxis=go.YAxis(showgrid=False, zeroline=False, showticklabels=False)
+      )
+    )
+
+    return py.plot(fig, filename='backbone-network-'+c_mark['tag'])
+
+
 if __name__ == "__main__":
   print("starting part one generation")
 
@@ -160,16 +229,20 @@ if __name__ == "__main__":
       #sequential coloring graph (degree of node when deleted, original degree)
       ##sequential_scatter = generate_sequential_coloring_plot(smallest_last_ordering, deleted_degrees, a_list)
 
-
       #get color clases
       a_list, num_colors = color_vertices(smallest_last_ordering, a_list)
+      print("finished coloring vertices")
 
       #color class size graph distribution
-      color_class_bar = generate_color_class_size_plot(a_list, num_colors)
-
-
-
+      ##color_class_bar = generate_color_class_size_plot(a_list, num_colors)
 
       #table of info relating to graph
 
+
       #backbone info (largest backbone)
+      largest_backbone_size, largest_backbone = select_backbone(a_list, smallest_last_ordering)
+      print(largest_backbone_size)
+      edges_for_bipartite = get_edges_for_bipartite(a_list, largest_backbone)
+
+      color_a = a_list[largest_backbone[0]]['color']
+      backbone_network = generate_backbone_network(largest_backbone, edges_for_bipartite, color_a)
