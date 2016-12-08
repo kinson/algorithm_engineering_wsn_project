@@ -31,10 +31,9 @@ def list_of_adjacent_vertices(neighbors, bipartite_points):
     """Return list of verticies that are in the biparatite graph made from colors."""
     return [p for p in neighbors if p in bipartite_points]
 
-def get_largest_component(color_a, color_b, v_by_colors):
+def get_largest_component(colors_combined):
     """Given two adjacency lists of verticies in different color classes, return the largest
     component of the bipartite graph."""
-    colors_combined = v_by_colors(color_a, color_b)
     all_points = list(colors_combined.keys())
     stack = []
     current_component = 0
@@ -71,22 +70,42 @@ def get_largest_component(color_a, color_b, v_by_colors):
             if top_stack in all_points:
                 all_points.remove(top_stack)
 
-    component_sizes = sorted(component_sizes.items(), key=(lambda k: k[1]), reverse=True)[0]
+    # component_sizes = sorted(component_sizes.items(), key=(lambda k: k[1]), reverse=True)[0]
+    return current_max_component
 
-    return component_sizes, current_max_component
+def get_degree_sum_in_component(component, colors_combined):
+    degree_sum = 0
+    for c in component:
+        neighbors = colors_combined[c]['connected_points']
+        for n in neighbors:
+            if n in component:
+                degree_sum += 1
+
+    return degree_sum
 
 def find_largest_backbone(colors, curried_vertices_for_colors):
     """Given the four largest color classes, find the largest bipartite component generated
     by combining any two of the color classes. Return the colors."""
     max = -1
     max_component = []
+    sum_nodes = 0
+    sum_degrees = 0
+    percent_done = 0
     for subset in itertools.combinations(colors, 2):
         #print('\t\t', a, b, len(colors))
-        largest_component, component = get_largest_component(subset[0], subset[1], curried_vertices_for_colors)
-        if largest_component[1] > max:
-            max = largest_component[1]
-            max_component = component
-    return max, max_component
+        print("\t", percent_done, "percent done")
+        percent_done += 16.66
+        colors_combined = curried_vertices_for_colors(subset[0], subset[1])
+        largest_component = get_largest_component(colors_combined)
+        largest_component_size = len(largest_component)
+        sum_degrees += get_degree_sum_in_component(largest_component, colors_combined)
+        sum_nodes += largest_component_size
+        if largest_component_size > max:
+            max = largest_component_size
+            max_component = largest_component
+
+    print("finished finding backbones")
+    return max, max_component, sum_nodes/6, sum_degrees/sum_nodes, sum_degrees/12
 
 def select_backbone(a_list, smallest_ordered_vertices):
     color_counts = get_colors_with_counts(a_list)
@@ -96,7 +115,7 @@ def select_backbone(a_list, smallest_ordered_vertices):
     return find_largest_backbone(largest_colors, curried_vertices_for_colors)
 
 if __name__ == "__main__":
-    a_list = get_adjacency_list(128, 8, 'square')
+    a_list, meta = get_adjacency_list(128, 8, 'square')
     print("part one done")
     smallest_ordered_vertices, deleted_degrees = get_smallest_vertex_ordering(a_list)
     print("part two done")

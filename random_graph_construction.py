@@ -125,6 +125,10 @@ def point_close_enough_for_edge(o_point, d_point, r):
 def create_adjancency_list(points, buckets, radius, b_length):
     """Return a list of dictionarys that contain the origin point and the connected points from it."""
     adj_list = {}
+    num_edges = 0
+    max_degree = 0
+    min_degree = 1000000
+    sum_degrees = 0
     for point in points:
         point_dict = {
             #'origin_point' : point,
@@ -138,15 +142,27 @@ def create_adjancency_list(points, buckets, radius, b_length):
         for potential_point in surrounding_points:
             if point_close_enough_for_edge(point, potential_point, radius) == True and point != potential_point:
                 point_dict['connected_points'].append(potential_point)
+                num_edges += 1
 
-        point_dict['degree'] = len(point_dict['connected_points'])
+        degree = len(point_dict['connected_points'])
+        point_dict['degree'] = degree
+        if degree > max_degree:
+            max_degree = degree
+        elif degree < min_degree:
+            min_degree = degree
+        sum_degrees += degree
         adj_list[point] = point_dict
-    return adj_list
+    return adj_list, num_edges/2, min_degree, max_degree, sum_degrees
 
 
 
 def get_adjacency_list(n_points, avg_degree, shape):
-    """Return adjacency list for given number of vertices, average degree on given shape."""
+    """Return adjacency list for given number of vertices, average degree on given shape.
+    Also return a dictionary with meta data about the random graph."""
+
+    #create meta data dictionary
+    meta = {}
+
     # get the points
     if shape == 'square':
         points = get_n_points_on_square(n_points)
@@ -157,6 +173,8 @@ def get_adjacency_list(n_points, avg_degree, shape):
         radius = get_unit_square_connection_radius(n_points, avg_degree)
     elif shape == 'disk':
         radius = get_unit_circle_connection_radius(n_points, avg_degree)
+
+    meta['r'] = radius
     # get the bucket side length and print it
     b_length = get_bucket_size(radius)
     # get number of buckets in each direction
@@ -164,8 +182,13 @@ def get_adjacency_list(n_points, avg_degree, shape):
     # fill buckets
     buckets = fill_buckets(points, buckets, b_length)
     # return the adjency list
-    return create_adjancency_list(points, buckets, radius, b_length)
+    adj_list, num_edges, min_degree, max_degree, sum_degrees = create_adjancency_list(points, buckets, radius, b_length)
+    meta['edges'] = num_edges
+    meta['min_degree'] = min_degree
+    meta['max_degree'] = max_degree
+    meta['real_average_degree'] = sum_degrees / n_points
 
+    return adj_list, meta
 
 
 if __name__ == "__main__":
