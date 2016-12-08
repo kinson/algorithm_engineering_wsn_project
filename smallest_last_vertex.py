@@ -20,7 +20,7 @@ def find_lowest_degree_vertex(vertex_buckets, max_bucket):
     for i in range(max_bucket + 1):
         if i in vertex_buckets and len(vertex_buckets[i]):
             popped_vertex = vertex_buckets[i].pop(0)
-            return (popped_vertex, vertex_buckets)
+            return (popped_vertex, vertex_buckets, i)
 
 def get_neighbors_and_bump_degrees(vertex_data, aux_dict, buckets):
     """Iterate over the neighbors to the vertex being removed. Bump their degrees down if they are greater than 0.
@@ -28,7 +28,6 @@ def get_neighbors_and_bump_degrees(vertex_data, aux_dict, buckets):
     to next neighbor. Return the buckets and auxillary degree dictionary back."""
     new_bucket = -1
     for neighbor in vertex_data['connected_points']:
-        #print(neighbor)
         new_bucket = aux_dict[neighbor] - 1 if aux_dict[neighbor] > 0 else 0
         aux_dict[neighbor] = new_bucket
 
@@ -56,17 +55,19 @@ def get_smallest_vertex_ordering(adj_list):
     """Return a list of vertices in ascending order of their degrees."""
     vertex_buckets, max_bucket = generate_buckets_of_vertices(adj_list)
     vertices_in_order_of_degree = []
+    deleted_degrees = []
     aux_vertex_degrees = populate_aux_dict(adj_list)
     total_len = len(adj_list)
     for i in range(len(adj_list)):
         #get the vertex with the minimum degree
-        min_vert, vertex_buckets = find_lowest_degree_vertex(vertex_buckets, max_bucket)
+        min_vert, vertex_buckets, degree_deleted = find_lowest_degree_vertex(vertex_buckets, max_bucket)
         #print (min_vert, vertex_buckets)
         vertices_in_order_of_degree.append(min_vert)
+        deleted_degrees.append(degree_deleted)
         #get all neighbors (and their degrees) of min vertex
         vertex_data = adj_list[min_vert]
         vertex_buckets, aux_vertex_degrees = get_neighbors_and_bump_degrees(vertex_data, aux_vertex_degrees, vertex_buckets)
-    return vertices_in_order_of_degree
+    return vertices_in_order_of_degree, deleted_degrees
 
 
 def get_used_neighbor_colors(v, adj_list):

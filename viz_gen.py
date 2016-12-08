@@ -2,6 +2,7 @@ import plotly.plotly as py
 import plotly.graph_objs as go
 
 from random_graph_construction import get_adjacency_list
+from smallest_last_vertex import get_smallest_vertex_ordering
 
 c_mark = {}
 
@@ -66,6 +67,42 @@ def generate_vertices_plot(a_list):
     fig = go.Figure(data = data, layout = layout)
     return py.plot(fig, filename='vertex-scatter-'+c_mark['tag'])
 
+def generate_sequential_coloring_plot(smallest_vertex_ordering, deleted_degrees, a_list):
+    o_degrees = []
+    graph_x_axis = list(range(1, len(deleted_degrees) + 1))
+    for i in range(len(smallest_vertex_ordering)):
+        point = smallest_vertex_ordering[i]
+        point_info = a_list[point]
+        o_degrees.append(point_info['degree'])
+
+    trace1 = go.Scatter(
+      x = graph_x_axis,
+      y = o_degrees,
+      name= "Original Degree"
+    )
+
+    trace2 = go.Scatter(
+      x = graph_x_axis,
+      y = deleted_degrees,
+      name = "Degree When Deleted"
+    )
+
+    data = [trace1, trace2]
+
+    layout = go.Layout(
+      title="Sequential Coloring Plot",
+      xaxis=dict(
+        title='Smallest Last Vertex Ordering',
+        ),
+      yaxis=dict(
+        title='Vertex Degree'
+      )
+    )
+
+    fig = go.Figure(data = data, layout = layout)
+    return py.plot(fig, filename='sequential-scatter-'+c_mark['tag'])
+
+
 
 if __name__ == "__main__":
   print("starting part one generation")
@@ -81,13 +118,19 @@ if __name__ == "__main__":
 
       #for each benchmark, generate the following graphics
       #degree distribution (as bar graph)
-      degree_dist_url = generate_degree_dist(a_list)
-      print(degree_dist_url)
+      ##degree_dist_url = generate_degree_dist(a_list)
+      ##print(degree_dist_url)
 
       #RCG display (scatter plot), include min/max vertex if possible (note: only for n <= 16000)
-      vertex_scatter = generate_vertices_plot(a_list)
-      print(vertex_scatter)
+      ##vertex_scatter = generate_vertices_plot(a_list)
+      ##print(vertex_scatter)
+
+      #do smallest last vertex ordering
+      smallest_last_ordering, deleted_degrees = get_smallest_vertex_ordering(a_list)
+
       #sequential coloring graph (degree of node when deleted, original degree)
+      sequential_scatter = generate_sequential_coloring_plot(smallest_last_ordering, deleted_degrees, a_list)
+
 
       #color class size graph distribution
 
