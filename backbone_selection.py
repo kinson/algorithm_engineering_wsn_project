@@ -27,10 +27,6 @@ def vertices_for_color(a_list):
         return {k: v for k, v in a_list.items() if v['color'] == color_a or v['color'] == color_b}
     return fn
 
-def list_of_adjacent_vertices(neighbors, bipartite_points):
-    """Return list of verticies that are in the biparatite graph made from colors."""
-    return [p for p in neighbors if p in bipartite_points]
-
 def get_largest_component(colors_combined):
     """Given two adjacency lists of verticies in different color classes, return the largest
     component of the bipartite graph."""
@@ -42,7 +38,6 @@ def get_largest_component(colors_combined):
     component_sizes = {}
     while len(all_points):
         if not len(stack):
-            #print("putting node on EMPTY stack")
             #only save largest bipartite graph
             if len(current_local_component) > len(current_max_component):
                 current_max_component = current_local_component
@@ -53,24 +48,14 @@ def get_largest_component(colors_combined):
             component_sizes[current_component] = 0
             stack.append(next_node)
         else:
-            #print("in component", current_component, " with size", component_sizes[current_component])
-            top_stack = stack[-1]
-            neighbors = colors_combined[top_stack]['connected_points']
-            bipartite_neighbors = list_of_adjacent_vertices(neighbors, all_points)
-            if len(bipartite_neighbors):
-                #print("\tfound" , len(bipartite_neighbors) , "neighbors to add to stack", top_stack)
-                stack.extend(bipartite_neighbors)
-            else:
-                #print("\tfound no neighbors (leaf node)", top_stack)
-                #add one to component size
-                component_sizes[current_component] += 1
-                #pop node off stack
-                point_to_add = stack.pop()
-                current_local_component.append(point_to_add)
+            top_stack = stack.pop()
+            bipartite_neighbors = [x for x in colors_combined[top_stack]['connected_points'] if x in all_points]
+            stack.extend(bipartite_neighbors)
+            #add one to component size
+            component_sizes[current_component] += 1
+            current_local_component.append(top_stack)
             if top_stack in all_points:
                 all_points.remove(top_stack)
-
-    # component_sizes = sorted(component_sizes.items(), key=(lambda k: k[1]), reverse=True)[0]
     return current_max_component
 
 def get_degree_sum_in_component(component, colors_combined):

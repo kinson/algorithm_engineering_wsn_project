@@ -7,27 +7,26 @@ from smallest_last_vertex import get_smallest_vertex_ordering
 from smallest_last_vertex import color_vertices
 from backbone_selection import select_backbone
 
-c_mark = {}
 
 benchmarks = [
-     { 'n': 1000,  'd': 32,  'shape': 'square' },
-    # { 'n': 4000,  'd': 64,  'shape': 'square' },
-    # { 'n': 16000, 'd': 64,  'shape': 'square' },
-    # { 'n': 64000, 'd': 64,  'shape': 'square' },
-    # { 'n': 64000, 'd': 128, 'shape': 'square' },
-    # { 'n': 4000,  'd': 64,  'shape': 'disk' },
-    # { 'n': 4000,  'd': 128, 'shape': 'disk' },
+     #{ 'n': 1000,  'd': 32,  'shape': 'square' },
+     #{ 'n': 4000,  'd': 64,  'shape': 'square' },
+     #{ 'n': 16000, 'd': 64,  'shape': 'square' },
+     #{ 'n': 64000, 'd': 64,  'shape': 'square' },
+     #{ 'n': 64000, 'd': 128, 'shape': 'square' },
+     #{ 'n': 4000,  'd': 64,  'shape': 'disk' },
+     #{ 'n': 4000,  'd': 128, 'shape': 'disk' },
+     {'n': 16, 'd': 4, 'shape': 'square'},
 ]
 
 def populate_c_mark(shape, n, d, a_list_meta):
-    global c_mark
-    c_mark.clear()
+    c_mark = {}
     c_mark['shape'] = shape
     c_mark['n'] = n
     c_mark['d'] = d
     c_mark['tag'] = shape + '-' + str(n) + 'n-' + str(d) + 'd'
-    c_mark['charts'] = {}
     c_mark = {**c_mark, **a_list_meta}
+    return c_mark
 
 def generate_degree_dist(a_list):
     degrees = {}
@@ -49,7 +48,7 @@ def generate_degree_dist(a_list):
       yaxis=dict(title='Number of Nodes')
     )
     fig = go.Figure(data = data, layout = layout)
-    return py.plot(fig, filename='degree-dist-bar-'+c_mark['tag'], auto_open=False)
+    return py.image.save_as(fig, filename='figs/degree-dist-bar-'+c_mark['tag']+'.png')
 
 def generate_vertices_plot(a_list):
     points = list(a_list.keys())
@@ -65,11 +64,11 @@ def generate_vertices_plot(a_list):
     data = [trace]
 
     layout = go.Layout(
-      title="Vertex Positioing",
+      title="Vertex Positioning",
     )
 
     fig = go.Figure(data = data, layout = layout)
-    return py.plot(fig, filename='vertex-scatter-'+c_mark['tag'], auto_open=False)
+    return py.image.save_as(fig, filename='figs/vertex-scatter-'+c_mark['tag']+'.png')
 
 def generate_sequential_coloring_plot(smallest_vertex_ordering, deleted_degrees, a_list):
     o_degrees = []
@@ -104,7 +103,7 @@ def generate_sequential_coloring_plot(smallest_vertex_ordering, deleted_degrees,
     )
 
     fig = go.Figure(data = data, layout = layout)
-    return py.plot(fig, filename='sequential-scatter-'+c_mark['tag'], auto_open=False)
+    return py.image.save_as(fig, filename='figs/sequential-scatter-'+c_mark['tag']+'.png')
 
 def get_color_sizes(max_color, a_list):
     color_sizes = [0] * max_color
@@ -134,7 +133,7 @@ def generate_color_class_size_plot(color_sizes, max_color):
     )
 
     fig = go.Figure(data = data, layout = layout)
-    return py.plot(fig, filename='color-size-bar-'+c_mark['tag'], auto_open=False)
+    return py.image.save_as(fig, filename='figs/color-size-bar-'+c_mark['tag']+'.png')
 
 def get_edges_for_bipartite(a_list, component):
     edges = []
@@ -190,7 +189,7 @@ def generate_backbone_network(nodes, edges, color_a):
       )
     )
 
-    return py.plot(fig, filename='backbone-network-'+c_mark['tag'], auto_open=False)
+    return py.image.save_as(fig, filename='figs/backbone-network-'+c_mark['tag']+'.png')
 
 
 if __name__ == "__main__":
@@ -206,17 +205,18 @@ if __name__ == "__main__":
       print("starting part one generation")
       #get an a_list to work with
       a_list, meta = get_adjacency_list(num_nodes, avg_degree, distribution)
-      populate_c_mark(distribution, num_nodes, avg_degree, meta)
+      c_mark = populate_c_mark(distribution, num_nodes, avg_degree, meta)
+      print("got adj list")
 
       #for each benchmark, generate the following graphics
       #degree distribution (as bar graph)
       degree_dist_url = generate_degree_dist(a_list)
-      c_mark["charts"]["degree_distribution"] = degree_dist_url
       ##print(degree_dist_url)
 
+
       #RCG display (scatter plot), include min/max vertex if possible (note: only for n <= 16000)
-      vertex_scatter_url = generate_vertices_plot(a_list)
-      c_mark["charts"]["vertex_scatter"] = vertex_scatter_url
+      if num_nodes <= 16000:
+          vertex_scatter_url = generate_vertices_plot(a_list)
       ##print(vertex_scatter)
 
       #do smallest last vertex ordering
@@ -227,7 +227,6 @@ if __name__ == "__main__":
 
       #sequential coloring graph (degree of node when deleted, original degree)
       sequential_scatter_url = generate_sequential_coloring_plot(smallest_last_ordering, deleted_degrees, a_list)
-      c_mark["charts"]["sequential_scatter"] = sequential_scatter_url
 
       #get color clases
       a_list, num_colors = color_vertices(smallest_last_ordering, a_list)
@@ -238,7 +237,6 @@ if __name__ == "__main__":
       color_sizes = get_color_sizes(num_colors, a_list)
       c_mark['max_color_class'] = max(color_sizes)
       color_class_bar_url = generate_color_class_size_plot(color_sizes, num_colors)
-      c_mark["charts"]["color_class_bar"] = color_class_bar_url
 
       #backbone info (largest backbone)
       print("finding backbones")
@@ -253,7 +251,6 @@ if __name__ == "__main__":
 
       color_a = a_list[largest_backbone[0]]['color']
       backbone_network_url = generate_backbone_network(largest_backbone, edges_for_bipartite, color_a)
-      c_mark["charts"]["backbone_network"] = backbone_network_url
 
       results.append(c_mark)
 
